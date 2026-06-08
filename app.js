@@ -1423,6 +1423,45 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Fullscreen support
+  const btnFullscreen = document.getElementById('btn-fullscreen-toggle');
+  if (btnFullscreen) {
+    btnFullscreen.onclick = () => {
+      toggleFullscreen();
+    };
+  }
+
+  // Auto-request fullscreen on first click
+  document.body.addEventListener('click', function autoFS() {
+    if (!document.fullscreenElement) {
+      toggleFullscreen();
+    }
+    document.body.removeEventListener('click', autoFS);
+  }, { once: true });
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+        .then(() => {
+          if (btnFullscreen) {
+            btnFullscreen.querySelector('i').setAttribute('data-lucide', 'minimize');
+            btnFullscreen.querySelector('span').textContent = 'Exit Fullscreen';
+            lucide.createIcons();
+          }
+        })
+        .catch(err => console.log('Fullscreen failed:', err));
+    } else {
+      document.exitFullscreen()
+        .then(() => {
+          if (btnFullscreen) {
+            btnFullscreen.querySelector('i').setAttribute('data-lucide', 'maximize');
+            btnFullscreen.querySelector('span').textContent = 'Fullscreen';
+            lucide.createIcons();
+          }
+        });
+    }
+  }
+
   // Initialize
   renderSidebarPlaylists();
   switchView('home');
