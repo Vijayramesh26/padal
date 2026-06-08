@@ -417,7 +417,7 @@ body {
    ========================================================================== */
 .hero-banner {
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(99, 102, 241, 0.08) 100%),
-              url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&q=80') center/cover no-repeat;
+              url('assets/hero_bg.png') center/cover no-repeat;
   border: 1px solid var(--border-glass-bright);
   border-radius: 20px;
   padding: 40px;
