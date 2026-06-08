@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Padal - Premium Music Streaming</title>
+  <!-- Google Fonts: Inter and Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Glowing background elements -->
+    <div class="glow-bg-1"></div>
+    <div class="glow-bg-2"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-container">
+        <div class="logo-icon-wrapper">
+          <i data-lucide="music-4" class="logo-icon"></i>
+        </div>
+        <span class="logo-text">பாடல்</span>
+        <button id="btn-sidebar-close" class="sidebar-close-btn" title="Close Menu">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-view="home">
+          <i data-lucide="home"></i>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" data-view="search-view">
+          <i data-lucide="search"></i>
+          <span>Search</span>
+        </button>
+        <button class="nav-item" data-view="favorites">
+          <i data-lucide="heart"></i>
+          <span>Favorites</span>
+        </button>
+        <button class="nav-item" data-view="playlists">
+          <i data-lucide="list-music"></i>
+          <span>Playlists</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="custom-playlists-sidebar">
+        <div class="playlist-header-row">
+          <span class="section-title">My Playlists</span>
+          <button id="btn-create-playlist-shortcut" title="Create Playlist">
+            <i data-lucide="plus"></i>
+          </button>
+        </div>
+        <ul id="sidebar-playlist-list" class="playlist-list-items">
+          <!-- Dynamic sidebar playlists -->
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="btn-settings-toggle">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header Bar -->
+      <header class="main-header">
+        <div class="header-top-row">
+          <button id="btn-sidebar-toggle" class="sidebar-toggle-btn" title="Toggle Sidebar">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="search-bar-container">
+            <i data-lucide="search" class="search-bar-icon"></i>
+            <input type="text" id="global-search-input" placeholder="Search songs, albums, artists, or playlists...">
+            <button id="btn-clear-search" class="clear-search-btn" style="display:none;">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="language-selector">
+          <span class="lang-label">Languages:</span>
+          <div class="lang-chips">
+            <button class="lang-chip active" data-lang="tamil">Tamil</button>
+            <button class="lang-chip" data-lang="english">English</button>
+            <button class="lang-chip" data-lang="hindi">Hindi</button>
+            <button class="lang-chip" data-lang="telugu">Telugu</button>
+            <button class="lang-chip" data-lang="malayalam">Malayalam</button>
+            <button class="lang-chip" data-lang="punjabi">Punjabi</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <div class="view-viewport">
+        <!-- HOME VIEW -->
+        <section id="view-home" class="view-panel active">
+          <!-- Hero Banner Section -->
+          <div class="hero-banner">
+            <div class="hero-content">
+              <span class="hero-badge">Trending Today</span>
+              <h1 id="hero-title">Discover the Best Tamil Hits</h1>
+              <p id="hero-subtitle">Listen to high-quality audio streaming. No ads, just pure music.</p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" id="btn-hero-play">
+                  <i data-lucide="play"></i> Play Mix
+                </button>
+                <button class="btn btn-secondary" id="btn-hero-explore">
+                  Explore More
+                </button>
+              </div>
+            </div>
+            <div class="hero-visual">
+              <div class="vinyl-record">
+                <div class="vinyl-center"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Curated Content Grid -->
+          <div class="home-sections">
+            <div class="content-section">
+              <div class="section-header">
+                <h2>Trending Tamil Songs</h2>
+                <button class="see-all-btn" data-see-all="tamil-trending">See All</button>
+              </div>
+              <div class="song-card-grid" id="trending-tamil-songs">
+                <!-- Skeleton loader / dynamic content -->
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+              </div>
+            </div>
+
+            <div class="content-section">
+              <div class="section-header">
+                <h2>Top Recommended</h2>
+                <button class="see-all-btn" data-see-all="recommended">See All</button>
+              </div>
+              <div class="song-card-grid" id="recommended-songs">
+                <!-- Skeleton loader / dynamic content -->
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+                <div class="card-skeleton"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEARCH RESULTS VIEW -->
+        <section id="view-search-view" class="view-panel">
+          <div class="search-view-header">
+            <h2 id="search-query-title">Search Results</h2>
+            <div class="search-filters">
+              <button class="filter-tab active" data-filter="all">All</button>
+              <button class="filter-tab" data-filter="songs">Songs</button>
+              <button class="filter-tab" data-filter="albums">Albums</button>
+              <button class="filter-tab" data-filter="playlists">Playlists</button>
+            </div>
+          </div>
+
+          <div id="search-welcome-state" class="empty-state active">
+            <i data-lucide="search" class="empty-icon"></i>
+            <p>Type in the search bar above to discover songs, albums, and playlists!</p>
+          </div>
+
+          <div class="search-results-wrapper" id="search-results-wrapper" style="display:none;">
+            <!-- Songs Result Section -->
+            <div class="search-section" id="search-section-songs">
+              <h3>Songs</h3>
+              <div class="songs-table-container">
+                <table class="songs-table">
+                  <thead>
+                    <tr>
+                      <th class="col-index">#</th>
+                      <th class="col-title">Title</th>
+                      <th class="col-album">Album</th>
+                      <th class="col-actions"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="songs-search-results">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Albums & Playlists Result section -->
+            <div class="search-grid-sections">
+              <div class="search-section" id="search-section-albums">
+                <h3>Albums</h3>
+                <div class="song-card-grid" id="albums-search-results">
+                  <!-- Dynamic cards -->
+                </div>
+              </div>
+
+              <div class="search-section" id="search-section-playlists">
+                <h3>Playlists</h3>
+                <div class="song-card-grid" id="playlists-search-results">
+                  <!-- Dynamic cards -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FAVORITES VIEW -->
+        <section id="view-favorites" class="view-panel">
+          <div class="view-header-banner">
+            <div class="banner-icon-bg fav-icon-bg">
+              <i data-lucide="heart" class="banner-icon-large"></i>
+            </div>
+            <div class="banner-text">
+              <h1>Favorites</h1>
+              <p id="fav-count-text">0 songs saved to your library</p>
+            </div>
+          </div>
+
+          <div class="songs-table-container">
+            <table class="songs-table">
+              <thead>
+                <tr>
+                  <th class="col-index">#</th>
+                  <th class="col-title">Title</th>
+                  <th class="col-album">Album</th>
+                  <th class="col-actions"></th>
+                </tr>
+              </thead>
+              <tbody id="favorites-songs-list">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+            <div id="favorites-empty-state" class="empty-state">
+              <i data-lucide="music" class="empty-icon"></i>
+              <p>No favorite songs yet. Search for songs and click the heart icon!</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- PLAYLISTS VIEW -->
+        <section id="view-playlists" class="view-panel">
+          <div class="playlist-view-header">
+            <h2>Your Playlists</h2>
+            <button class="btn btn-primary" id="btn-create-playlist">
+              <i data-lucide="plus"></i> Create Playlist
+            </button>
+          </div>
+
+          <div class="playlist-grid" id="playlists-container">
+            <!-- Dynamic playlists cards -->
+          </div>
+
+          <div id="playlists-empty-state" class="empty-state">
+            <i data-lucide="list-music" class="empty-icon"></i>
+            <p>No playlists created yet. Create a playlist to organize your library!</p>
+          </div>
+        </section>
+
+        <!-- PLAYLIST DETAIL VIEW -->
+        <section id="view-playlist-detail" class="view-panel">
+          <div class="view-header-banner">
+            <div class="banner-icon-bg playlist-icon-bg">
+              <i data-lucide="music-2" class="banner-icon-large"></i>
+            </div>
+            <div class="banner-text">
+              <span class="banner-subtext">PLAYLIST</span>
+              <h1 id="playlist-detail-title">Playlist Name</h1>
+              <div class="playlist-meta-row">
+                <span id="playlist-detail-count">0 songs</span>
+                <span class="bullet">•</span>
+                <button class="btn btn-primary" id="btn-playlist-play-all" style="padding: 6px 12px; font-size: 12px; border-radius: 8px; gap: 4px;">
+                  <i data-lucide="play" style="width: 14px; height: 14px;"></i> Play All
+                </button>
+                <span class="bullet">•</span>
+                <button id="btn-delete-playlist" class="btn-text-danger">
+                  <i data-lucide="trash-2"></i> Delete Playlist
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="songs-table-container">
+            <table class="songs-table">
+              <thead>
+                <tr>
+                  <th class="col-index">#</th>
+                  <th class="col-title">Title</th>
+                  <th class="col-album">Album</th>
+                  <th class="col-actions"></th>
+                </tr>
+              </thead>
+              <tbody id="playlist-songs-list">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+            <div id="playlist-detail-empty-state" class="empty-state">
+              <i data-lucide="music" class="empty-icon"></i>
+              <p>This playlist is empty. Search songs and add them here!</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ALBUM DETAIL VIEW -->
+        <section id="view-album-detail" class="view-panel">
+          <div class="view-header-banner" id="album-banner">
+            <img id="album-detail-image" src="" alt="Album Art" class="banner-art-img">
+            <div class="banner-text">
+              <span class="banner-subtext">ALBUM</span>
+              <h1 id="album-detail-title">Album Title</h1>
+              <p id="album-detail-artists">Artists...</p>
+              <div class="album-meta-row">
+                <span id="album-detail-year">2026</span>
+                <span class="bullet">•</span>
+                <span id="album-detail-count">0 songs</span>
+                <button class="btn btn-primary btn-play-album-all" id="btn-album-play-all">
+                  <i data-lucide="play"></i> Play All
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="songs-table-container">
+            <table class="songs-table">
+              <thead>
+                <tr>
+                  <th class="col-index">#</th>
+                  <th class="col-title">Title</th>
+                  <th class="col-actions"></th>
+                </tr>
+              </thead>
+              <tbody id="album-songs-list">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR (QUEUE & LYRICS) -->
+    <aside class="right-panel" id="right-panel-drawer">
+      <div class="right-panel-header">
+        <h3 id="right-panel-title">Play Queue</h3>
+        <button id="btn-close-right-panel" class="close-panel-btn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Queue Pane -->
+      <div id="right-panel-queue" class="panel-content-pane active">
+        <div class="queue-actions">
+          <span id="queue-songs-count">0 Songs in Queue</span>
+          <button id="btn-clear-queue" class="btn-text-muted">Clear</button>
+        </div>
+        <ul id="queue-items-list" class="queue-list">
+          <!-- Dynamic queue list -->
+        </ul>
+      </div>
+
+      <!-- Lyrics Pane -->
+      <div id="right-panel-lyrics" class="panel-content-pane">
+        <div class="lyrics-wrapper">
+          <div id="lyrics-text-container" class="lyrics-text">
+            Select a song or open the lyrics to begin.
+          </div>
+          <div id="lyrics-copyright" class="lyrics-copyright"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Bottom Player Controls -->
+    <footer class="player-bar">
+      <!-- Progress Scrub Bar (Absolute positioned at top of footer bar) -->
+      <div class="progress-bar-wrapper">
+        <span class="time-label current-time" id="player-time-current">0:00</span>
+        <div class="progress-track" id="player-progress-container">
+          <div class="progress-fill" id="player-progress-fill"></div>
+          <div class="progress-handle" id="player-progress-handle"></div>
+        </div>
+        <span class="time-label duration" id="player-time-total">0:00</span>
+      </div>
+
+      <div class="player-controls-container">
+        <!-- Current Track Info -->
+        <div class="player-track-info">
+          <div class="track-art-wrapper">
+            <img src="" id="player-track-img" class="track-art" alt="">
+            <div class="sound-wave" id="sound-wave-anim">
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+            </div>
+          </div>
+          <div class="track-details">
+            <h4 id="player-track-title" class="marquee">No Song Playing</h4>
+            <p id="player-track-artist">Select a track to start</p>
+          </div>
+          <button id="player-btn-fav" class="player-action-btn" title="Add to Favorites">
+            <i data-lucide="heart"></i>
+          </button>
+        </div>
+
+        <!-- Center Controls -->
+        <div class="player-playback-controls">
+          <button id="player-btn-shuffle" class="player-action-btn" title="Shuffle">
+            <i data-lucide="shuffle"></i>
+          </button>
+          <button id="player-btn-prev" class="player-action-btn" title="Previous">
+            <i data-lucide="skip-back"></i>
+          </button>
+          <button id="player-btn-play-pause" class="player-play-btn" title="Play">
+            <i data-lucide="play" class="play-icon"></i>
+            <i data-lucide="pause" class="pause-icon" style="display:none;"></i>
+          </button>
+          <button id="player-btn-next" class="player-action-btn" title="Next">
+            <i data-lucide="skip-forward"></i>
+          </button>
+          <button id="player-btn-loop" class="player-action-btn" title="Loop">
+            <i data-lucide="repeat"></i>
+          </button>
+        </div>
+
+        <!-- Right Controls (Volume, Queue, Lyrics, Quality) -->
+        <div class="player-right-controls">
+          <button id="player-btn-lyrics" class="player-action-btn" title="Show Lyrics">
+            <i data-lucide="align-left"></i>
+          </button>
+          <button id="player-btn-queue" class="player-action-btn" title="Show Queue">
+            <i data-lucide="list-music"></i>
+          </button>
+
+          <div class="quality-selector-wrapper">
+            <button id="player-btn-quality" class="player-action-btn text-btn" title="Audio Quality">320k</button>
+            <div class="quality-dropdown" id="quality-dropdown-menu">
+              <button class="quality-option" data-quality="96kbps">Low (96kbps)</button>
+              <button class="quality-option" data-quality="160kbps">Medium (160kbps)</button>
+              <button class="quality-option active" data-quality="320kbps">High (320kbps)</button>
+            </div>
+          </div>
+
+          <div class="volume-control-wrapper">
+            <button id="player-btn-mute" class="player-action-btn" title="Mute">
+              <i data-lucide="volume-2" id="volume-icon"></i>
+            </button>
+            <input type="range" id="volume-slider" min="0" max="100" value="80" class="volume-slider">
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- PLAYLIST PICKER MODAL -->
+  <div class="modal-backdrop" id="playlist-picker-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Add to Playlist</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('playlist-picker-modal').classList.remove('active')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="playlist-picker-list" class="picker-list">
+          <!-- Playlists selection -->
+        </div>
+        <div class="new-playlist-input-row">
+          <input type="text" id="new-playlist-modal-name" placeholder="Or create new playlist...">
+          <button class="btn btn-primary" id="btn-create-playlist-modal">Create & Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop" id="settings-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Settings</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('settings-modal').classList.remove('active')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-item">
+          <label for="settings-api-url">JioSaavn API Server</label>
+          <input type="url" id="settings-api-url" placeholder="https://saavn.sumit.co">
+          <p class="setting-hint">Modify this if the default API server experiences rate limits or outages.</p>
+        </div>
+        <div class="setting-actions">
+          <button class="btn btn-secondary" id="btn-settings-reset">Reset Defaults</button>
+          <button class="btn btn-primary" id="btn-settings-save">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Audio Element -->
+  <audio id="main-audio-element" style="display:none;"></audio>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
