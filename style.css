@@ -1,5 +1,5 @@
 /* ==========================================================================
-   PADAL - DESIGN SYSTEM & MODERN STYLING
+   NADHAM - DESIGN SYSTEM & MODERN STYLING
    ========================================================================== */
 
 :root {
@@ -116,7 +116,6 @@ body {
   z-index: 10;
 }
 
-}
 .sidebar-close-btn {
   display: none;
   background: transparent;

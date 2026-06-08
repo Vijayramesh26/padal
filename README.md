@@ -1,6 +1,6 @@
-# பாடல் (Padal) - Premium Music Streaming Platform
+# நாதம் (Nadham) - Premium Music Streaming Platform
 
-பாடல் (Padal) is a premium, glassmorphic music streaming platform designed with a focus on ease of use, visual beauty, and responsiveness. It utilizes public wrapper APIs of JioSaavn to stream high-quality music across multiple languages, with a default focus on Tamil hits.
+நாதம் (Nadham) is a premium, glassmorphic music streaming platform designed with a focus on ease of use, visual beauty, and responsiveness. It utilizes public wrapper APIs of JioSaavn to stream high-quality music across multiple languages, with a default focus on Tamil hits.
 
 ## Features
 
@@ -17,7 +17,7 @@
 
 ## Local Installation
 
-Since Padal is built on pure HTML5, vanilla CSS, and vanilla ES6 JavaScript, it does not require a complex build process.
+Since Nadham is built on pure HTML5, vanilla CSS, and vanilla ES6 JavaScript, it does not require a complex build process.
 
 1. Clone or copy this repository:
    ```bash

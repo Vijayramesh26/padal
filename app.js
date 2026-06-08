@@ -1,5 +1,5 @@
 /* ==========================================================================
-   PADAL - APPLICATION CONTROLLER
+   NADHAM - APPLICATION CONTROLLER
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
