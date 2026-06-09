@@ -190,6 +190,7 @@
               <button class="filter-tab" data-filter="songs">Songs</button>
               <button class="filter-tab" data-filter="albums">Albums</button>
               <button class="filter-tab" data-filter="playlists">Playlists</button>
+              <button class="filter-tab" data-filter="artists">Artists</button>
             </div>
           </div>
 
@@ -219,7 +220,7 @@
               </div>
             </div>
 
-            <!-- Albums & Playlists Result section -->
+            <!-- Albums, Playlists & Artists Result section -->
             <div class="search-grid-sections">
               <div class="search-section" id="search-section-albums">
                 <h3>Albums</h3>
@@ -231,6 +232,13 @@
               <div class="search-section" id="search-section-playlists">
                 <h3>Playlists</h3>
                 <div class="song-card-grid" id="playlists-search-results">
+                  <!-- Dynamic cards -->
+                </div>
+              </div>
+
+              <div class="search-section" id="search-section-artists">
+                <h3>Artists</h3>
+                <div class="song-card-grid" id="artists-search-results">
                   <!-- Dynamic cards -->
                 </div>
               </div>
@@ -366,6 +374,63 @@
                 <!-- Dynamic rows -->
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <!-- ARTIST DETAIL VIEW -->
+        <section id="view-artist-detail" class="view-panel">
+          <div class="view-header-banner" id="artist-banner">
+            <div class="banner-art-wrapper artist-art-wrapper">
+              <img id="artist-detail-image" src="" alt="Artist Photo" class="banner-art-img artist-profile-img">
+            </div>
+            <div class="banner-text">
+              <span class="banner-subtext">ARTIST</span>
+              <h1 id="artist-detail-title">Artist Name</h1>
+              <p id="artist-detail-verified" style="display: flex; align-items: center; gap: 4px; color: #8b5cf6;">
+                <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Verified Artist
+              </p>
+              <div class="artist-meta-row" style="margin-top: 8px; font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span id="artist-detail-followers">0 followers</span>
+                <span class="bullet">•</span>
+                <span id="artist-detail-language">Tamil</span>
+                <button class="btn btn-primary" id="btn-artist-play-all" style="padding: 6px 12px; font-size: 12px; border-radius: 8px; gap: 4px; margin-left: 12px;">
+                  <i data-lucide="play" style="width: 14px; height: 14px;"></i> Play Popular Tracks
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="artist-content-layout" style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px;">
+            <div class="artist-popular-songs">
+              <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 16px; color: var(--text-primary);">Popular Tracks</h3>
+              <div class="songs-table-container">
+                <table class="songs-table">
+                  <thead>
+                    <tr>
+                      <th class="col-index">#</th>
+                      <th class="col-title">Title</th>
+                      <th class="col-album">Album</th>
+                      <th class="col-actions"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="artist-songs-list">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="artist-sidebar-info">
+              <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 16px; color: var(--text-primary);">Bio & Info</h3>
+              <div class="glass-card artist-bio-card" style="padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: var(--text-secondary); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-glass);">
+                <p id="artist-detail-bio">No biography available for this artist.</p>
+              </div>
+              
+              <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 16px; color: var(--text-primary);">Similar Artists</h3>
+              <div class="similar-artists-list" id="artist-similar-list" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Similar artist items -->
+              </div>
+            </div>
           </div>
         </section>
       </div>

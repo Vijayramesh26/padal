@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentView: 'home',
     activeAlbumId: null,
     activePlaylistId: null,
+    activeArtistId: null,
     songToAddToPlaylist: null
   };
 
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     viewPlaylists: document.getElementById('view-playlists'),
     viewPlaylistDetail: document.getElementById('view-playlist-detail'),
     viewAlbumDetail: document.getElementById('view-album-detail'),
+    viewArtistDetail: document.getElementById('view-artist-detail'),
 
     // Header Controls
     globalSearch: document.getElementById('global-search-input'),
@@ -64,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     songsSearchResults: document.getElementById('songs-search-results'),
     albumsSearchResults: document.getElementById('albums-search-results'),
     playlistsSearchResults: document.getElementById('playlists-search-results'),
+    artistsSearchResults: document.getElementById('artists-search-results'),
     searchQueryTitle: document.getElementById('search-query-title'),
     searchFilterTabs: document.querySelectorAll('.filter-tab'),
     searchWelcomeState: document.getElementById('search-welcome-state'),
@@ -95,6 +98,16 @@ document.addEventListener('DOMContentLoaded', () => {
     albumDetailImage: document.getElementById('album-detail-image'),
     albumSongsList: document.getElementById('album-songs-list'),
     btnAlbumPlayAll: document.getElementById('btn-album-play-all'),
+
+    // Artist Details View Components
+    artistDetailTitle: document.getElementById('artist-detail-title'),
+    artistDetailImage: document.getElementById('artist-detail-image'),
+    artistDetailFollowers: document.getElementById('artist-detail-followers'),
+    artistDetailLanguage: document.getElementById('artist-detail-language'),
+    artistDetailBio: document.getElementById('artist-detail-bio'),
+    artistSongsList: document.getElementById('artist-songs-list'),
+    artistSimilarList: document.getElementById('artist-similar-list'),
+    btnArtistPlayAll: document.getElementById('btn-artist-play-all'),
 
     // Right Drawer Panels
     rightPanelDrawer: document.getElementById('right-panel-drawer'),
@@ -262,6 +275,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (viewName === 'album-detail') {
       renderAlbumDetailView(state.activeAlbumId);
       DOM.viewAlbumDetail.classList.add('active');
+    } else if (viewName === 'artist-detail') {
+      renderArtistDetailView(state.activeArtistId);
+      DOM.viewArtistDetail.classList.add('active');
     }
   }
 
@@ -820,38 +836,243 @@ document.addEventListener('DOMContentLoaded', () => {
     switchView('home');
   };
 
+  // Setup Search Filter Tabs
+  DOM.searchFilterTabs.forEach(tab => {
+    tab.onclick = () => {
+      DOM.searchFilterTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.getAttribute('data-filter');
+      
+      const secSongs = document.getElementById('search-section-songs');
+      const secAlbums = document.getElementById('search-section-albums');
+      const secPlaylists = document.getElementById('search-section-playlists');
+      const secArtists = document.getElementById('search-section-artists');
+      
+      if (filter === 'all') {
+        if (secSongs) secSongs.style.display = 'block';
+        if (secAlbums) secAlbums.style.display = 'block';
+        if (secPlaylists) secPlaylists.style.display = 'block';
+        if (secArtists) secArtists.style.display = 'block';
+      } else {
+        if (secSongs) secSongs.style.display = (filter === 'songs') ? 'block' : 'none';
+        if (secAlbums) secAlbums.style.display = (filter === 'albums') ? 'block' : 'none';
+        if (secPlaylists) secPlaylists.style.display = (filter === 'playlists') ? 'block' : 'none';
+        if (secArtists) secArtists.style.display = (filter === 'artists') ? 'block' : 'none';
+      }
+    };
+  });
+
   async function runSearch(query) {
     switchView('search-view');
     DOM.searchWelcomeState.style.display = 'none';
     DOM.searchResultsWrapper.style.display = 'block';
     DOM.searchQueryTitle.textContent = `Search results for "${query}"`;
     
-    // Render loading rows
+    // Render loading rows / skeletons
     DOM.songsSearchResults.innerHTML = '<tr><td colspan="4" style="text-align:center;">Searching songs...</td></tr>';
     DOM.albumsSearchResults.innerHTML = '<div class="card-skeleton"></div><div class="card-skeleton"></div>';
     DOM.playlistsSearchResults.innerHTML = '<div class="card-skeleton"></div><div class="card-skeleton"></div>';
+    DOM.artistsSearchResults.innerHTML = '<div class="card-skeleton"></div><div class="card-skeleton"></div>';
+
+    // 1. Search Songs
+    apiFetch(`/api/search/songs?query=${encodeURIComponent(query)}`)
+      .then(data => {
+        const results = data.results || data;
+        DOM.songsSearchResults.innerHTML = '';
+        if (!results || results.length === 0) {
+          DOM.songsSearchResults.innerHTML = '<tr><td colspan="4" style="text-align:center;">No songs found.</td></tr>';
+        } else {
+          results.forEach((song, idx) => {
+            const row = document.createElement('tr');
+            row.className = 'song-row';
+            row.innerHTML = `
+              <td class="col-index">${idx + 1}</td>
+              <td class="col-title">
+                <img src="${getSongImage(song)}" alt="" class="table-song-art">
+                <div class="table-song-details">
+                  <h4>${getSongTitle(song)}</h4>
+                  <p>${getSongArtist(song)}</p>
+                </div>
+              </td>
+              <td class="col-album">${getAlbumTitle(song)}</td>
+              <td class="col-actions">
+                <button class="row-action-btn fav-btn" title="Add to Favorites">
+                  <i data-lucide="heart"></i>
+                </button>
+                <button class="row-action-btn add-btn" title="Add to Playlist">
+                  <i data-lucide="plus"></i>
+                </button>
+                <button class="row-action-btn queue-btn" title="Add to Queue">
+                  <i data-lucide="list-plus"></i>
+                </button>
+              </td>
+            `;
+            row.querySelector('.fav-btn').onclick = (e) => {
+              e.stopPropagation();
+              toggleFavorite(song, e.currentTarget);
+            };
+            row.querySelector('.add-btn').onclick = (e) => {
+              e.stopPropagation();
+              openPlaylistPicker(song);
+            };
+            row.querySelector('.queue-btn').onclick = (e) => {
+              e.stopPropagation();
+              addToQueue(song);
+            };
+            row.onclick = () => playSongNow(song);
+            DOM.songsSearchResults.appendChild(row);
+          });
+          lucide.createIcons();
+          updateFavIconsInTable(DOM.songsSearchResults);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        DOM.songsSearchResults.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#ef4444;">Failed to load songs.</td></tr>';
+      });
+
+    // 2. Search Albums
+    apiFetch(`/api/search/albums?query=${encodeURIComponent(query)}`)
+      .then(albumData => {
+        const albumResults = albumData.results || albumData;
+        DOM.albumsSearchResults.innerHTML = '';
+        if (!albumResults || albumResults.length === 0) {
+          DOM.albumsSearchResults.innerHTML = '<p class="empty-text">No albums found</p>';
+        } else {
+          albumResults.slice(0, 8).forEach(album => {
+            const card = document.createElement('div');
+            card.className = 'music-card';
+            card.innerHTML = `
+              <div class="card-img-wrapper">
+                <img src="${getSongImage(album)}" alt="${album.name}" class="card-img">
+              </div>
+              <div class="card-info">
+                <h4>${album.name || album.title}</h4>
+                <p>${album.artist || album.primaryArtists || 'Various'}</p>
+              </div>
+            `;
+            card.onclick = () => {
+              state.activeAlbumId = album.id;
+              switchView('album-detail');
+            };
+            DOM.albumsSearchResults.appendChild(card);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        DOM.albumsSearchResults.innerHTML = '<p class="empty-text">Failed to load albums.</p>';
+      });
+
+    // 3. Search Playlists
+    apiFetch(`/api/search/playlists?query=${encodeURIComponent(query)}`)
+      .then(playlistData => {
+        const playlistResults = playlistData.results || playlistData;
+        DOM.playlistsSearchResults.innerHTML = '';
+        if (!playlistResults || playlistResults.length === 0) {
+          DOM.playlistsSearchResults.innerHTML = '<p class="empty-text">No playlists found</p>';
+        } else {
+          playlistResults.slice(0, 8).forEach(pl => {
+            const card = document.createElement('div');
+            card.className = 'music-card';
+            card.innerHTML = `
+              <div class="card-img-wrapper">
+                <img src="${getSongImage(pl)}" alt="${pl.name}" class="card-img">
+              </div>
+              <div class="card-info">
+                <h4>${pl.name || pl.title}</h4>
+                <p>Curated Playlist</p>
+              </div>
+            `;
+            card.onclick = () => {
+              state.activePlaylistId = pl.name || pl.title;
+              renderCustomOrRemotePlaylist(pl);
+            };
+            DOM.playlistsSearchResults.appendChild(card);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        DOM.playlistsSearchResults.innerHTML = '<p class="empty-text">Failed to load playlists.</p>';
+      });
+
+    // 4. Search Artists
+    apiFetch(`/api/search/artists?query=${encodeURIComponent(query)}`)
+      .then(artistData => {
+        const artistResults = artistData.results || artistData;
+        DOM.artistsSearchResults.innerHTML = '';
+        if (!artistResults || artistResults.length === 0) {
+          DOM.artistsSearchResults.innerHTML = '<p class="empty-text">No artists found</p>';
+        } else {
+          artistResults.slice(0, 8).forEach(artist => {
+            const card = document.createElement('div');
+            card.className = 'music-card artist-card';
+            card.innerHTML = `
+              <div class="card-img-wrapper">
+                <img src="${getSongImage(artist)}" alt="${artist.name}" class="card-img">
+              </div>
+              <div class="card-info">
+                <h4>${artist.name || artist.title}</h4>
+                <p>${artist.role || 'Artist'}</p>
+              </div>
+            `;
+            card.onclick = () => {
+              state.activeArtistId = artist.id;
+              switchView('artist-detail');
+            };
+            DOM.artistsSearchResults.appendChild(card);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        DOM.artistsSearchResults.innerHTML = '<p class="empty-text">Failed to load artists.</p>';
+      });
+  }
+
+  // Render Artist Profile Detail View
+  async function renderArtistDetailView(artistId) {
+    DOM.artistSongsList.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading artist popular tracks...</td></tr>';
+    DOM.artistSimilarList.innerHTML = '<div style="text-align:center; padding: 15px; color:var(--text-muted);">Loading similar artists...</div>';
+    DOM.artistDetailBio.textContent = 'Loading biography...';
 
     try {
-      const data = await apiFetch(`/api/search/songs?query=${encodeURIComponent(query)}`);
-      const results = data.results || data;
+      const artist = await apiFetch(`/api/artists?id=${artistId}`);
+      DOM.artistDetailTitle.textContent = artist.name || artist.title;
+      DOM.artistDetailFollowers.textContent = `${artist.followerCount ? Number(artist.followerCount).toLocaleString() : '0'} followers`;
+      DOM.artistDetailLanguage.textContent = artist.dominantLanguage ? (artist.dominantLanguage.charAt(0).toUpperCase() + artist.dominantLanguage.slice(1)) : 'Tamil';
       
-      DOM.songsSearchResults.innerHTML = '';
-      if (!results || results.length === 0) {
-        DOM.songsSearchResults.innerHTML = '<tr><td colspan="4" style="text-align:center;">No songs found.</td></tr>';
+      DOM.artistDetailImage.src = getSongImage(artist);
+
+      // Handle biography formatting
+      let bioText = artist.bio || 'No biography available for this artist.';
+      if (Array.isArray(bioText)) bioText = bioText.map(b => b.text).join(' ');
+      bioText = bioText.replace(/<\/?[^>]+(>|$)/g, ""); // Strip simple html tags
+      DOM.artistDetailBio.textContent = bioText;
+
+      // Populate popular tracks
+      const songs = artist.topSongs || [];
+      DOM.artistSongsList.innerHTML = '';
+      if (songs.length === 0) {
+        DOM.artistSongsList.innerHTML = '<tr><td colspan="4" style="text-align:center;">No tracks found for this artist.</td></tr>';
       } else {
-        results.forEach((song, idx) => {
+        songs.forEach((track, idx) => {
           const row = document.createElement('tr');
           row.className = 'song-row';
+          if (state.currentSong && state.currentSong.id === track.id) {
+            row.classList.add('active');
+          }
           row.innerHTML = `
             <td class="col-index">${idx + 1}</td>
             <td class="col-title">
-              <img src="${getSongImage(song)}" alt="" class="table-song-art">
+              <img src="${getSongImage(track)}" alt="" class="table-song-art">
               <div class="table-song-details">
-                <h4>${getSongTitle(song)}</h4>
-                <p>${getSongArtist(song)}</p>
+                <h4>${getSongTitle(track)}</h4>
+                <p>${getSongArtist(track)}</p>
               </div>
             </td>
-            <td class="col-album">${getAlbumTitle(song)}</td>
+            <td class="col-album">${getAlbumTitle(track)}</td>
             <td class="col-actions">
               <button class="row-action-btn fav-btn" title="Add to Favorites">
                 <i data-lucide="heart"></i>
@@ -866,80 +1087,56 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
           row.querySelector('.fav-btn').onclick = (e) => {
             e.stopPropagation();
-            toggleFavorite(song, e.currentTarget);
+            toggleFavorite(track, e.currentTarget);
           };
           row.querySelector('.add-btn').onclick = (e) => {
             e.stopPropagation();
-            openPlaylistPicker(song);
+            openPlaylistPicker(track);
           };
           row.querySelector('.queue-btn').onclick = (e) => {
             e.stopPropagation();
-            addToQueue(song);
+            addToQueue(track);
           };
-          row.onclick = () => playSongNow(song);
-          DOM.songsSearchResults.appendChild(row);
+          row.onclick = () => playSongNow(track);
+          DOM.artistSongsList.appendChild(row);
         });
       }
 
-      // Albums search
-      const albumData = await apiFetch(`/api/search/albums?query=${encodeURIComponent(query)}`);
-      const albumResults = albumData.results || albumData;
-      DOM.albumsSearchResults.innerHTML = '';
-      if (!albumResults || albumResults.length === 0) {
-        DOM.albumsSearchResults.innerHTML = '<p class="empty-text">No albums found</p>';
-      } else {
-        albumResults.slice(0, 4).forEach(album => {
-          const card = document.createElement('div');
-          card.className = 'music-card';
-          card.innerHTML = `
-            <div class="card-img-wrapper">
-              <img src="${getSongImage(album)}" alt="${album.name}" class="card-img">
-            </div>
-            <div class="card-info">
-              <h4>${album.name || album.title}</h4>
-              <p>${album.artist || album.primaryArtists || 'Various'}</p>
-            </div>
-          `;
-          card.onclick = () => {
-            state.activeAlbumId = album.id;
-            switchView('album-detail');
-          };
-          DOM.albumsSearchResults.appendChild(card);
-        });
-      }
+      DOM.btnArtistPlayAll.onclick = () => {
+        if (songs.length > 0) {
+          playSongsImmediate(songs);
+          showToast(`Playing ${artist.name || artist.title}'s popular songs!`);
+        }
+      };
 
-      // Playlists search
-      const playlistData = await apiFetch(`/api/search/playlists?query=${encodeURIComponent(query)}`);
-      const playlistResults = playlistData.results || playlistData;
-      DOM.playlistsSearchResults.innerHTML = '';
-      if (!playlistResults || playlistResults.length === 0) {
-        DOM.playlistsSearchResults.innerHTML = '<p class="empty-text">No playlists found</p>';
+      // Populate similar artists list
+      const similar = artist.similarArtists || [];
+      DOM.artistSimilarList.innerHTML = '';
+      if (similar.length === 0) {
+        DOM.artistSimilarList.innerHTML = '<div style="color:var(--text-muted); font-size:14px; padding:10px;">No similar artists found.</div>';
       } else {
-        playlistResults.slice(0, 4).forEach(pl => {
-          const card = document.createElement('div');
-          card.className = 'music-card';
-          card.innerHTML = `
-            <div class="card-img-wrapper">
-              <img src="${getSongImage(pl)}" alt="${pl.name}" class="card-img">
-            </div>
-            <div class="card-info">
-              <h4>${pl.name || pl.title}</h4>
-              <p>Curated Playlist</p>
-            </div>
+        similar.slice(0, 5).forEach(sa => {
+          const row = document.createElement('div');
+          row.className = 'similar-artist-row';
+          row.innerHTML = `
+            <img src="${getSongImage(sa)}" alt="" class="similar-artist-img">
+            <span class="similar-artist-name">${sa.name}</span>
           `;
-          card.onclick = () => {
-            state.activePlaylistId = pl.name || pl.title;
-            // Fetch playlist detail and show
-            renderCustomOrRemotePlaylist(pl);
+          row.onclick = () => {
+            state.activeArtistId = sa.id;
+            renderArtistDetailView(sa.id);
           };
-          DOM.playlistsSearchResults.appendChild(card);
+          DOM.artistSimilarList.appendChild(row);
         });
       }
 
       lucide.createIcons();
-      updateFavIconsInTable(DOM.songsSearchResults);
+      updateFavIconsInTable(DOM.artistSongsList);
     } catch (e) {
       console.error(e);
+      DOM.artistSongsList.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#ef4444;">Failed to load artist details.</td></tr>';
+      DOM.artistDetailBio.textContent = 'Biography could not be loaded.';
+      DOM.artistSimilarList.innerHTML = '<div style="text-align:center; padding:10px; color:#ef4444;">Failed to load similar artists.</div>';
     }
   }
 
