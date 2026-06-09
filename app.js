@@ -1430,15 +1430,6 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleFullscreen();
     };
   }
-
-  // Auto-request fullscreen on first click
-  // document.body.addEventListener('click', function autoFS() {
-    // if (!document.fullscreenElement) {
-      // toggleFullscreen();
-  //   }
-    // document.body.removeEventListener('click', autoFS);
-//  }, { once: true });
-
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen()
