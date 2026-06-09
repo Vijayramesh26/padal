@@ -1453,6 +1453,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Handle Splash Screen fade-out
+  const splash = document.getElementById('splash-screen');
+  if (splash) {
+    setTimeout(() => {
+      splash.classList.add('fade-out');
+      splash.addEventListener('transitionend', () => splash.remove());
+    }, 2200); // 2.2 seconds wait matching loader bar progress
+  }
+
   // Initialize
   renderSidebarPlaylists();
   switchView('home');
