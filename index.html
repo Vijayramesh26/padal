@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Nadham - Premium Music Streaming</title>
   <!-- Google Fonts: Inter and Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -143,6 +143,33 @@
             <div class="hero-visual">
               <div class="vinyl-record">
                 <div class="vinyl-center"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Daily Routine Focus Section -->
+          <div class="routine-focus-container" id="routine-focus-container">
+            <div class="routine-focus-card glass-card">
+              <div class="routine-focus-info">
+                <div class="routine-badge-row">
+                  <span class="routine-badge" id="routine-day-badge">Today's Focus</span>
+                  <span class="routine-xp-badge"><i data-lucide="zap"></i> +50 XP</span>
+                </div>
+                <h2 id="routine-focus-title">Focus Title</h2>
+                <p id="routine-focus-description">Tailored description here.</p>
+                <div class="routine-actions">
+                  <button class="btn btn-primary" id="btn-routine-play">
+                    <i data-lucide="play"></i> Start Focus Session
+                  </button>
+                  <button class="btn btn-secondary text-btn" id="btn-routine-info">
+                    <i data-lucide="info"></i> About Focus
+                  </button>
+                </div>
+              </div>
+              <div class="routine-focus-graphic">
+                <div class="routine-glow-ring">
+                  <i data-lucide="brain-circuit" id="routine-focus-icon" class="routine-icon-large"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -465,6 +492,63 @@
           <div id="lyrics-copyright" class="lyrics-copyright"></div>
         </div>
       </div>
+
+      <!-- Focus & Sleep Timer Pane -->
+      <div id="right-panel-focus" class="panel-content-pane">
+        <div class="focus-wrapper" style="padding: 20px; display: flex; flex-direction: column; gap: 24px;">
+          <!-- Sleep Timer Section -->
+          <div class="focus-section-card glass-card" style="padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
+            <h4 style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-primary); font-size: 16px;"><i data-lucide="alarm-clock"></i> Sleep Timer</h4>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">Slowly fade out and stop music after the timer expires.</p>
+            <div class="sleep-timer-options" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+              <button class="btn btn-secondary timer-chip active" data-time="0">Off</button>
+              <button class="btn btn-secondary timer-chip" data-time="5">5m</button>
+              <button class="btn btn-secondary timer-chip" data-time="15">15m</button>
+              <button class="btn btn-secondary timer-chip" data-time="30">30m</button>
+              <button class="btn btn-secondary timer-chip" data-time="45">45m</button>
+              <button class="btn btn-secondary timer-chip" data-time="60">60m</button>
+            </div>
+            <div id="sleep-timer-status" style="margin-top: 14px; text-align: center; font-size: 14px; font-weight: 600; color: var(--accent); display: none;">
+              Timer Active: <span id="sleep-timer-countdown">30:00</span>
+            </div>
+          </div>
+
+          <!-- Ambient Sounds Mixer -->
+          <div class="focus-section-card glass-card" style="padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
+            <h4 style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-primary); font-size: 16px;"><i data-lucide="waves"></i> Ambient Sound Mixer</h4>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">Overlay soothing background environments with your music.</p>
+            
+            <div class="ambient-mixers-list" style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- Rain sound -->
+              <div class="ambient-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; display: flex; align-items: center; gap: 6px; color: var(--text-primary);"><i data-lucide="cloud-rain" style="color:#60a5fa; width: 16px;"></i> Cozy Rain</span>
+                  <button class="ambient-toggle-btn text-btn" data-sound="rain" style="font-size: 12px; color: var(--text-muted);">Muted</button>
+                </div>
+                <input type="range" class="ambient-volume-slider" data-sound="rain" min="0" max="100" value="0" style="width: 100%;">
+              </div>
+
+              <!-- Campfire sound -->
+              <div class="ambient-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; display: flex; align-items: center; gap: 6px; color: var(--text-primary);"><i data-lucide="flame" style="color:#f97316; width: 16px;"></i> Crackling Fire</span>
+                  <button class="ambient-toggle-btn text-btn" data-sound="fire" style="font-size: 12px; color: var(--text-muted);">Muted</button>
+                </div>
+                <input type="range" class="ambient-volume-slider" data-sound="fire" min="0" max="100" value="0" style="width: 100%;">
+              </div>
+
+              <!-- Forest sound -->
+              <div class="ambient-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; display: flex; align-items: center; gap: 6px; color: var(--text-primary);"><i data-lucide="trees" style="color:#4ade80; width: 16px;"></i> Forest Birds</span>
+                  <button class="ambient-toggle-btn text-btn" data-sound="forest" style="font-size: 12px; color: var(--text-muted);">Muted</button>
+                </div>
+                <input type="range" class="ambient-volume-slider" data-sound="forest" min="0" max="100" value="0" style="width: 100%;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </aside>
 
     <!-- Bottom Player Controls -->
@@ -484,12 +568,7 @@
         <div class="player-track-info">
           <div class="track-art-wrapper">
             <img src="assets/favicon.png" id="player-track-img" class="track-art" alt="Nadham">
-            <div class="sound-wave" id="sound-wave-anim">
-              <span class="bar"></span>
-              <span class="bar"></span>
-              <span class="bar"></span>
-              <span class="bar"></span>
-            </div>
+            <canvas id="player-equalizer-canvas" class="player-equalizer-canvas"></canvas>
           </div>
           <div class="track-details">
             <h4 id="player-track-title" class="marquee">No Song Playing</h4>
@@ -522,6 +601,9 @@
 
         <!-- Right Controls (Volume, Queue, Lyrics, Quality) -->
         <div class="player-right-controls">
+          <button id="player-btn-focus" class="player-action-btn" title="Focus Mode & Sleep Timer">
+            <i data-lucide="compass"></i>
+          </button>
           <button id="player-btn-lyrics" class="player-action-btn" title="Show Lyrics">
             <i data-lucide="align-left"></i>
           </button>
@@ -597,7 +679,7 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Audio Element -->
-  <audio id="main-audio-element" style="display:none;"></audio>
+  <audio id="main-audio-element" crossorigin="anonymous" style="display:none;"></audio>
 
   <!-- Application Logic -->
   <script src="app.js"></script>

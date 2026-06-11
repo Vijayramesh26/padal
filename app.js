@@ -215,6 +215,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   }
 
+  // Helper to dynamically update Lucide icons even after they are replaced with SVG
+  function updateIcon(parentEl, newIconName) {
+    if (!parentEl) return;
+    const oldIcon = parentEl.querySelector('i, svg');
+    if (oldIcon) {
+      const newIcon = document.createElement('i');
+      newIcon.setAttribute('data-lucide', newIconName);
+      if (oldIcon.className) {
+        newIcon.className = oldIcon.className;
+      }
+      oldIcon.replaceWith(newIcon);
+      lucide.createIcons();
+    }
+  }
+
   // API Methods
   async function apiFetch(endpoint) {
     const cleanBase = state.apiBaseUrl.replace(/\/+$/, '');
@@ -620,6 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Audio URL not available.');
       return;
     }
+    audio.crossOrigin = "anonymous";
     audio.src = url;
     
     // Update player UI metadata
@@ -627,11 +643,32 @@ document.addEventListener('DOMContentLoaded', () => {
     DOM.playerTrackTitle.textContent = getSongTitle(song);
     DOM.playerTrackArtist.textContent = getSongArtist(song);
     
+    // Sync metadata to OS lockscreen and headset controls
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: getSongTitle(song),
+        artist: getSongArtist(song),
+        album: getAlbumTitle(song),
+        artwork: [
+          { src: getSongImage(song), sizes: '96x96', type: 'image/png' },
+          { src: getSongImage(song), sizes: '128x128', type: 'image/png' },
+          { src: getSongImage(song), sizes: '192x192', type: 'image/png' },
+          { src: getSongImage(song), sizes: '256x256', type: 'image/png' },
+          { src: getSongImage(song), sizes: '384x384', type: 'image/png' },
+          { src: getSongImage(song), sizes: '512x512', type: 'image/png' }
+        ]
+      });
+    }
+    
     // Set active playing state class for vinyl rotation
     DOM.trackInfoWrapper.classList.add('playing');
     
     audio.play()
       .then(() => {
+        initEqualizer();
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
         state.isPlaying = true;
         updatePlayerControlsUI();
       })
@@ -643,6 +680,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fallbackUrl && fallbackUrl !== url) {
           audio.src = fallbackUrl;
           audio.play().then(() => {
+            initEqualizer();
+            if (audioCtx && audioCtx.state === 'suspended') {
+              audioCtx.resume();
+            }
             state.isPlaying = true;
             updatePlayerControlsUI();
           });
@@ -652,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check favorites heart icon
     const isFav = state.favorites.some(f => f.id === song.id);
     DOM.playerBtnFav.classList.toggle('active', isFav);
-    DOM.playerBtnFav.querySelector('i').setAttribute('data-lucide', isFav ? 'heart-handshake' : 'heart');
+    updateIcon(DOM.playerBtnFav, isFav ? 'heart-handshake' : 'heart');
     
     // Highlights playing row in lists
     document.querySelectorAll('.song-row').forEach(row => row.classList.remove('active'));
@@ -736,6 +777,16 @@ document.addEventListener('DOMContentLoaded', () => {
       DOM.playerProgressHandle.style.left = `${pct}%`;
       DOM.playerTimeCurrent.textContent = formatTime(audio.currentTime);
       DOM.playerTimeTotal.textContent = formatTime(audio.duration);
+
+      // Sync and scroll lyrics active line
+      if (DOM.rightPanelDrawer.classList.contains('active') && DOM.rightLyricsPane.classList.contains('active')) {
+        const lines = DOM.lyricsTextContainer.querySelectorAll('.lyrics-line-item');
+        if (lines.length > 0) {
+          const progressPct = audio.currentTime / audio.duration;
+          const targetIdx = Math.min(Math.floor(progressPct * lines.length), lines.length - 1);
+          highlightLyricsLine(targetIdx);
+        }
+      }
     }
   });
 
@@ -801,13 +852,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (state.loop === 'all') {
       state.loop = 'one';
       DOM.playerBtnLoop.classList.add('active');
-      DOM.playerBtnLoop.querySelector('i').setAttribute('data-lucide', 'repeat-1');
+      updateIcon(DOM.playerBtnLoop, 'repeat-1');
       DOM.playerBtnLoop.title = 'Loop One';
       showToast('Loop Song Enabled');
     } else {
       state.loop = 'none';
       DOM.playerBtnLoop.classList.remove('active');
-      DOM.playerBtnLoop.querySelector('i').setAttribute('data-lucide', 'repeat');
+      updateIcon(DOM.playerBtnLoop, 'repeat');
       DOM.playerBtnLoop.title = 'Loop Off';
       showToast('Loop Mode Disabled');
     }
@@ -1336,13 +1387,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update active player heart icon if matches
     if (state.currentSong && state.currentSong.id === song.id) {
       DOM.playerBtnFav.classList.toggle('active', isFav);
-      DOM.playerBtnFav.querySelector('i').setAttribute('data-lucide', isFav ? 'heart-handshake' : 'heart');
-      lucide.createIcons();
+      updateIcon(DOM.playerBtnFav, isFav ? 'heart-handshake' : 'heart');
     }
+    lucide.createIcons();
     
     // Update trigger button visually if passed
     if (buttonEl) {
       buttonEl.classList.toggle('active', isFav);
+      updateIcon(buttonEl, isFav ? 'heart-handshake' : 'heart');
+      lucide.createIcons();
     }
     
     // Update lists
@@ -1448,6 +1501,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // LYRICS DRAWER & RIGHT PANEL TOGGLE
   // ==========================================================================
+  // Map new Focus elements dynamically
+  DOM.playerBtnFocus = document.getElementById('player-btn-focus');
+  DOM.rightFocusPane = document.getElementById('right-panel-focus');
+
   DOM.playerBtnQueue.onclick = () => {
     toggleRightPanel('queue');
   };
@@ -1456,13 +1513,23 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleRightPanel('lyrics');
   };
 
+  if (DOM.playerBtnFocus) {
+    DOM.playerBtnFocus.onclick = () => {
+      toggleRightPanel('focus');
+    };
+  }
+
   DOM.btnCloseRightPanel.onclick = () => {
     DOM.rightPanelDrawer.classList.remove('active');
   };
 
   function toggleRightPanel(paneName) {
     const isCurrentlyActive = DOM.rightPanelDrawer.classList.contains('active');
-    const isTargetActive = paneName === 'queue' ? DOM.rightQueuePane.classList.contains('active') : DOM.rightLyricsPane.classList.contains('active');
+    
+    let isTargetActive = false;
+    if (paneName === 'queue') isTargetActive = DOM.rightQueuePane.classList.contains('active');
+    else if (paneName === 'lyrics') isTargetActive = DOM.rightLyricsPane.classList.contains('active');
+    else if (paneName === 'focus') isTargetActive = DOM.rightFocusPane && DOM.rightFocusPane.classList.contains('active');
     
     if (isCurrentlyActive && isTargetActive) {
       DOM.rightPanelDrawer.classList.remove('active');
@@ -1475,17 +1542,24 @@ document.addEventListener('DOMContentLoaded', () => {
       DOM.rightPanelTitle.textContent = 'Play Queue';
       DOM.rightQueuePane.classList.add('active');
       DOM.rightLyricsPane.classList.remove('active');
+      if (DOM.rightFocusPane) DOM.rightFocusPane.classList.remove('active');
       renderQueueList();
-    } else {
+    } else if (paneName === 'lyrics') {
       DOM.rightPanelTitle.textContent = 'Lyrics';
       DOM.rightQueuePane.classList.remove('active');
       DOM.rightLyricsPane.classList.add('active');
+      if (DOM.rightFocusPane) DOM.rightFocusPane.classList.remove('active');
       if (state.currentSong) {
         fetchAndRenderLyrics(state.currentSong.id);
       } else {
         DOM.lyricsTextContainer.innerHTML = 'Select a song and play to see lyrics.';
         DOM.lyricsCopyright.textContent = '';
       }
+    } else if (paneName === 'focus') {
+      DOM.rightPanelTitle.textContent = 'Focus Mode';
+      DOM.rightQueuePane.classList.remove('active');
+      DOM.rightLyricsPane.classList.remove('active');
+      if (DOM.rightFocusPane) DOM.rightFocusPane.classList.add('active');
     }
   }
 
@@ -1495,7 +1569,24 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const data = await apiFetch(`/api/songs/${songId}/lyrics`);
       if (data && data.lyrics) {
-        DOM.lyricsTextContainer.innerHTML = data.lyrics;
+        // Parse HTML line breaks into array
+        const rawLyrics = data.lyrics.replace(/<br\s*\/?>/gi, '\n');
+        const lines = rawLyrics.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
+        DOM.lyricsTextContainer.innerHTML = '';
+        lines.forEach((line, idx) => {
+          const lineEl = document.createElement('div');
+          lineEl.className = 'lyrics-line-item';
+          lineEl.textContent = line;
+          lineEl.onclick = () => {
+            if (audio.duration) {
+              audio.currentTime = (idx / lines.length) * audio.duration;
+              highlightLyricsLine(idx);
+            }
+          };
+          DOM.lyricsTextContainer.appendChild(lineEl);
+        });
+        
         DOM.lyricsCopyright.textContent = data.copyright || '';
       } else {
         DOM.lyricsTextContainer.innerHTML = 'Lyrics are not available for this song.';
@@ -1632,9 +1723,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.documentElement.requestFullscreen()
         .then(() => {
           if (btnFullscreen) {
-            btnFullscreen.querySelector('i').setAttribute('data-lucide', 'minimize');
+            updateIcon(btnFullscreen, 'minimize');
             btnFullscreen.querySelector('span').textContent = 'Exit Fullscreen';
-            lucide.createIcons();
           }
         })
         .catch(err => console.log('Fullscreen failed:', err));
@@ -1642,9 +1732,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.exitFullscreen()
         .then(() => {
           if (btnFullscreen) {
-            btnFullscreen.querySelector('i').setAttribute('data-lucide', 'maximize');
+            updateIcon(btnFullscreen, 'maximize');
             btnFullscreen.querySelector('span').textContent = 'Fullscreen';
-            lucide.createIcons();
           }
         });
     }
@@ -1659,10 +1748,320 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2200); // 2.2 seconds wait matching loader bar progress
   }
 
-  // Initialize
+  // ==========================================================================
+  // 1. DAILY FOCUS ROUTINE ENGINE
+  // ==========================================================================
+  const ROUTINES = {
+    1: { day: 'Monday', title: 'Productivity & Career Focus', query: 'motivation focus instrumental', desc: 'Power through your workflow and career tasks with energetic focus beats.', icon: 'briefcase' },
+    2: { day: 'Tuesday', title: 'Learning & Fitness Mix', query: 'workout energetic motivation', desc: 'Level up your workouts and focus retention with high-tempo motivational tracks.', icon: 'dumbbell' },
+    3: { day: 'Wednesday', title: 'Health & Mindfulness Guide', query: 'meditation acoustic ambient healing', desc: 'Center your mind and restore wellness with calming, acoustic harmonies.', icon: 'spa' },
+    4: { day: 'Thursday', title: 'Skill Development session', query: 'lofi study focus coding', desc: 'Settle down for skill learning, programming, or reading with soothing lofi mixes.', icon: 'code-2' },
+    5: { day: 'Friday', title: 'Networking & Finance Planning', query: 'jazz chill background focus', desc: 'Wind down the week, manage budgets, or plan financial goals to smooth jazz.', icon: 'trending-up' },
+    6: { day: 'Saturday', title: 'Personal Projects sandbox', query: 'epic cinematic motivation side project', desc: 'Build and launch your creative projects with motivational, cinematic tracks.', icon: 'rocket' },
+    7: { day: 'Sunday', title: 'Recovery & Replanning Calm', query: 'ambient sleep calming relaxation', desc: 'Recover your energy and organize the week ahead with peaceful ambient mixes.', icon: 'cloud-sun' }
+  };
+
+  function initDailyRoutine() {
+    const dayOfWeek = new Date().getDay(); // 0 is Sunday, 1 is Monday ...
+    const dayIdx = dayOfWeek === 0 ? 7 : dayOfWeek;
+    const todayRoutine = ROUTINES[dayIdx];
+    
+    const dayBadge = document.getElementById('routine-day-badge');
+    const routineTitle = document.getElementById('routine-focus-title');
+    const routineDesc = document.getElementById('routine-focus-description');
+    const routineIcon = document.getElementById('routine-focus-icon');
+    
+    if (todayRoutine) {
+      if (dayBadge) dayBadge.textContent = `${todayRoutine.day} Focus`;
+      if (routineTitle) routineTitle.textContent = todayRoutine.title;
+      if (routineDesc) routineDesc.textContent = todayRoutine.desc;
+      if (routineIcon) {
+        const newIcon = document.createElement('i');
+        newIcon.id = 'routine-focus-icon';
+        newIcon.className = 'routine-icon-large';
+        newIcon.setAttribute('data-lucide', todayRoutine.icon);
+        routineIcon.replaceWith(newIcon);
+        lucide.createIcons();
+      }
+    }
+    
+    const btnRoutinePlay = document.getElementById('btn-routine-play');
+    if (btnRoutinePlay) {
+      btnRoutinePlay.onclick = async () => {
+        showToast(`Fetching your daily ${todayRoutine.day} focus mix...`);
+        try {
+          const data = await apiFetch(`/api/search/songs?query=${encodeURIComponent(todayRoutine.query)}&limit=15`);
+          const results = data.results || data;
+          if (results && results.length > 0) {
+            playSongsImmediate(results);
+            showToast(`Enjoy your focus session!`);
+          } else {
+            showToast(`Could not find tracks for this focus.`);
+          }
+        } catch (e) {
+          showToast(`Failed to load focus mix. Try again.`);
+        }
+      };
+    }
+    
+    const btnRoutineInfo = document.getElementById('btn-routine-info');
+    if (btnRoutineInfo) {
+      btnRoutineInfo.onclick = () => {
+        alert(`Routine Details:\n\nFocus Area: ${todayRoutine.title}\nDescription: ${todayRoutine.desc}\nEnjoy +50 XP upon session completion!`);
+      };
+    }
+  }
+
+  // ==========================================================================
+  // 2. REAL-TIME WEB AUDIO API CANVAS EQUALIZER
+  // ==========================================================================
+  let audioCtx = null;
+  let analyser = null;
+  let source = null;
+  let equalizerInitialized = false;
+
+  function initEqualizer() {
+    if (equalizerInitialized) return;
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64; // Small fftSize to make it look clean
+      
+      // Route: audio element -> analyserNode -> audioCtx.destination
+      source = audioCtx.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      
+      equalizerInitialized = true;
+      drawEqualizer();
+    } catch (e) {
+      console.error("Web Audio Equalizer initialization failed:", e);
+    }
+  }
+
+  function drawEqualizer() {
+    if (!analyser) return;
+    requestAnimationFrame(drawEqualizer);
+    
+    const canvas = document.getElementById('player-equalizer-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width = canvas.clientWidth || 52;
+    const height = canvas.height = canvas.clientHeight || 52;
+    
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyser.getByteFrequencyData(dataArray);
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    // Fill background blur
+    ctx.fillStyle = 'rgba(7, 9, 19, 0.7)';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw audio frequency columns
+    const barWidth = (width / bufferLength) * 1.5;
+    let x = 0;
+    
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = (dataArray[i] / 255) * height * 0.8;
+      
+      // Modern purple-to-blue neon gradient matching Nadham theme
+      const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
+      gradient.addColorStop(0, '#8b5cf6'); // Violet
+      gradient.addColorStop(1, '#6366f1'); // Indigo
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
+      
+      x += barWidth;
+    }
+  }
+
+  // ==========================================================================
+  // 3. LYRICS HIGHLIGHT & SCROLL SYNC HELPERS
+  // ==========================================================================
+  function highlightLyricsLine(index) {
+    const lines = DOM.lyricsTextContainer.querySelectorAll('.lyrics-line-item');
+    lines.forEach((line, idx) => {
+      if (idx === index) {
+        if (!line.classList.contains('active')) {
+          line.classList.add('active');
+          // Smoothly scroll active lyrics element to view center
+          line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+        line.classList.remove('active');
+      }
+    });
+  }
+
+  // ==========================================================================
+  // 4. SLEEP TIMER & AMBIENT MIXER LOGIC
+  // ==========================================================================
+  let sleepTimerInterval = null;
+  let sleepTimeRemaining = 0; // In seconds
+
+  function initSleepTimer() {
+    const chips = document.querySelectorAll('.timer-chip');
+    chips.forEach(chip => {
+      chip.onclick = () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        
+        const minutes = parseInt(chip.getAttribute('data-time'), 10);
+        setSleepTimer(minutes);
+      };
+    });
+  }
+
+  function setSleepTimer(minutes) {
+    clearInterval(sleepTimerInterval);
+    const statusContainer = document.getElementById('sleep-timer-status');
+    const countdownEl = document.getElementById('sleep-timer-countdown');
+    
+    if (minutes === 0) {
+      sleepTimeRemaining = 0;
+      if (statusContainer) statusContainer.style.display = 'none';
+      showToast('Sleep Timer deactivated');
+      return;
+    }
+    
+    sleepTimeRemaining = minutes * 60;
+    if (statusContainer) statusContainer.style.display = 'block';
+    showToast(`Sleep Timer set for ${minutes} minutes`);
+    
+    sleepTimerInterval = setInterval(() => {
+      sleepTimeRemaining--;
+      if (sleepTimeRemaining <= 0) {
+        clearInterval(sleepTimerInterval);
+        fadeAndStopPlayback();
+      } else {
+        // Display countdown MM:SS
+        const m = Math.floor(sleepTimeRemaining / 60);
+        const s = (sleepTimeRemaining % 60).toString().padStart(2, '0');
+        if (countdownEl) countdownEl.textContent = `${m}:${s}`;
+      }
+    }, 1000);
+  }
+
+  function fadeAndStopPlayback() {
+    showToast('Timer expired. Fading audio...');
+    const originalVol = audio.volume;
+    let steps = 30;
+    let stepTime = 1000; // 30 seconds fade out duration
+    const volStep = originalVol / steps;
+    
+    const fadeInterval = setInterval(() => {
+      steps--;
+      audio.volume = Math.max(0, audio.volume - volStep);
+      if (steps <= 0) {
+        clearInterval(fadeInterval);
+        audio.pause();
+        state.isPlaying = false;
+        audio.volume = originalVol; // Restore volume level for future play sessions
+        updatePlayerControlsUI();
+        
+        // Deactivate active chip status in UI
+        const statusContainer = document.getElementById('sleep-timer-status');
+        if (statusContainer) statusContainer.style.display = 'none';
+        const chips = document.querySelectorAll('.timer-chip');
+        chips.forEach(c => c.classList.remove('active'));
+        if (chips[0]) chips[0].classList.add('active'); // Set Off chip active
+        
+        showToast('Playback stopped');
+      }
+    }, stepTime);
+  }
+
+  // Ambient Sounds Mixer Players (Looping royalty-free audio tracks)
+  const ambientAudio = {
+    rain: new Audio('https://assets.mixkit.co/active_storage/sfx/2433/2433-84.wav'),
+    fire: new Audio('https://assets.mixkit.co/active_storage/sfx/2438/2438-84.wav'),
+    forest: new Audio('https://assets.mixkit.co/active_storage/sfx/2436/2436-84.wav')
+  };
+  
+  // Set loop properties
+  Object.values(ambientAudio).forEach(aud => {
+    aud.loop = true;
+    aud.volume = 0; // Silenced on start
+  });
+
+  function initAmbientMixer() {
+    const sliders = document.querySelectorAll('.ambient-volume-slider');
+    const buttons = document.querySelectorAll('.ambient-toggle-btn');
+    
+    sliders.forEach(slider => {
+      const sound = slider.getAttribute('data-sound');
+      const aud = ambientAudio[sound];
+      
+      slider.oninput = (e) => {
+        const val = e.target.value;
+        aud.volume = val / 100;
+        
+        const btn = document.querySelector(`.ambient-toggle-btn[data-sound="${sound}"]`);
+        if (btn) {
+          if (val > 0) {
+            btn.textContent = `${val}%`;
+            btn.classList.add('active');
+            aud.play().catch(() => {}); // catch autoplay blockers
+          } else {
+            btn.textContent = 'Muted';
+            btn.classList.remove('active');
+            aud.pause();
+          }
+        }
+      };
+    });
+    
+    buttons.forEach(btn => {
+      const sound = btn.getAttribute('data-sound');
+      const aud = ambientAudio[sound];
+      const slider = document.querySelector(`.ambient-volume-slider[data-sound="${sound}"]`);
+      
+      btn.onclick = () => {
+        if (aud.volume > 0) {
+          aud.volume = 0;
+          aud.pause();
+          btn.textContent = 'Muted';
+          btn.classList.remove('active');
+          if (slider) slider.value = 0;
+        } else {
+          aud.volume = 0.3;
+          aud.play().catch(() => {});
+          btn.textContent = '30%';
+          btn.classList.add('active');
+          if (slider) slider.value = 30;
+        }
+      };
+    });
+  }
+
+  // Setup Media Session API handlers for headset controls (Play, Pause, Next, Prev)
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => {
+      togglePlayPause();
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      togglePlayPause();
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      playPrev();
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      playNext();
+    });
+  }
+
+  // Initialize all features on load
   renderSidebarPlaylists();
   switchView('home');
   loadHomeContent();
+  initDailyRoutine();
+  initSleepTimer();
+  initAmbientMixer();
 
   // Highlight initial language chip
   DOM.langChips.forEach(c => {
