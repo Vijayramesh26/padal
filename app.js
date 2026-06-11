@@ -2024,10 +2024,10 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < bufferLength; i++) {
       const barHeight = (dataArray[i] / 255) * height * 0.8;
       
-      // Modern purple-to-blue neon gradient matching Nadham theme
+      // Vibrant pink-to-purple gradient matching Apple Music theme
       const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
-      gradient.addColorStop(0, '#8b5cf6'); // Violet
-      gradient.addColorStop(1, '#6366f1'); // Indigo
+      gradient.addColorStop(0, '#fc3c44'); // Apple Red
+      gradient.addColorStop(1, '#af52de'); // Apple Purple
       
       ctx.fillStyle = gradient;
       ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
