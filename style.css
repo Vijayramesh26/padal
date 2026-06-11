@@ -331,7 +331,7 @@ body {
   border: none;
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 16px;
   width: 100%;
 }
 .clear-search-btn {
@@ -1513,6 +1513,7 @@ body {
   padding: 10px 14px;
   color: white;
   font-family: var(--font-body);
+  font-size: 16px;
 }
 .new-playlist-input-row input:focus {
   border-color: var(--primary);
@@ -1537,6 +1538,7 @@ body {
   padding: 10px 14px;
   color: white;
   font-family: var(--font-body);
+  font-size: 16px;
 }
 .setting-item input:focus {
   border-color: var(--primary);
