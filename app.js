@@ -671,6 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         state.isPlaying = true;
         updatePlayerControlsUI();
+        applyAudioModifications();
       })
       .catch(err => {
         console.error('Audio play failed:', err);
@@ -686,6 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             state.isPlaying = true;
             updatePlayerControlsUI();
+            applyAudioModifications();
           });
         }
       });
@@ -1819,6 +1821,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let analyser = null;
   let source = null;
   let equalizerInitialized = false;
+  let delayNode = null;
+  let feedbackGain = null;
+  let reverbWetGain = null;
+  let currentSpeed = 1.0;
+  let isSlowedReverb = false;
 
   function initEqualizer() {
     if (equalizerInitialized) return;
@@ -1848,6 +1855,145 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error("Web Audio Equalizer initialization failed:", e);
     }
+  }
+
+  function toggleReverbNode(enable) {
+    if (!audioCtx || !source) return;
+    try {
+      source.disconnect();
+      analyser.disconnect();
+      if (delayNode) delayNode.disconnect();
+      if (feedbackGain) feedbackGain.disconnect();
+      if (reverbWetGain) reverbWetGain.disconnect();
+      
+      if (enable) {
+        delayNode = audioCtx.createDelay(1.0);
+        delayNode.delayTime.value = 0.35;
+        
+        feedbackGain = audioCtx.createGain();
+        feedbackGain.gain.value = 0.4;
+        
+        reverbWetGain = audioCtx.createGain();
+        reverbWetGain.gain.value = 0.35;
+        
+        source.connect(analyser);
+        source.connect(delayNode);
+        delayNode.connect(feedbackGain);
+        feedbackGain.connect(delayNode);
+        
+        delayNode.connect(reverbWetGain);
+        
+        analyser.connect(audioCtx.destination);
+        reverbWetGain.connect(audioCtx.destination);
+      } else {
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+      }
+    } catch (e) {
+      console.error("Failed to toggle reverb:", e);
+    }
+  }
+
+  function applyAudioModifications() {
+    if (!audio) return;
+    let targetSpeed = currentSpeed;
+    if (isSlowedReverb) {
+      targetSpeed = 0.8;
+      const speedSlider = document.getElementById('playback-speed-slider');
+      const speedValText = document.getElementById('speed-value');
+      if (speedSlider) speedSlider.value = 0.8;
+      if (speedValText) speedValText.textContent = '0.8x';
+    }
+    audio.playbackRate = targetSpeed;
+    
+    if (equalizerInitialized && audioCtx) {
+      toggleReverbNode(isSlowedReverb);
+    }
+  }
+
+  function initAudioModifications() {
+    const speedSlider = document.getElementById('playback-speed-slider');
+    const speedValText = document.getElementById('speed-value');
+    const slowedToggle = document.getElementById('slowed-reverb-toggle');
+    
+    if (speedSlider) {
+      speedSlider.oninput = (e) => {
+        const speed = parseFloat(e.target.value);
+        currentSpeed = speed;
+        if (speedValText) speedValText.textContent = `${speed.toFixed(1)}x`;
+        if (isSlowedReverb && speed !== 0.8) {
+          isSlowedReverb = false;
+          if (slowedToggle) slowedToggle.checked = false;
+        }
+        applyAudioModifications();
+      };
+    }
+    
+    if (slowedToggle) {
+      slowedToggle.onchange = (e) => {
+        isSlowedReverb = e.target.checked;
+        applyAudioModifications();
+      };
+    }
+  }
+
+  function initVoiceSearch() {
+    const btnVoice = document.getElementById('btn-voice-search');
+    if (!btnVoice) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      btnVoice.style.display = 'none';
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = state.selectedLanguage === 'tamil' ? 'ta-IN' : 'en-US';
+    recognition.interimResults = false;
+
+    let isListening = false;
+
+    btnVoice.onclick = (e) => {
+      e.stopPropagation();
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    };
+
+    recognition.onstart = () => {
+      isListening = true;
+      btnVoice.style.color = '#ef4444';
+      btnVoice.classList.add('listening-pulse');
+      showToast('Listening... Speak a song name or artist.');
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      btnVoice.style.color = 'var(--text-secondary)';
+      btnVoice.classList.remove('listening-pulse');
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      if (event.error === 'not-allowed') {
+        showToast('Microphone access denied.');
+      } else {
+        showToast('Voice search failed. Please try again.');
+      }
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.trim();
+      if (transcript) {
+        showToast(`Voice Search: "${transcript}"`);
+        DOM.globalSearch.value = transcript;
+        DOM.btnClearSearch.style.display = 'flex';
+        runSearch(transcript);
+      }
+    };
   }
 
   function drawEqualizer() {
@@ -2072,6 +2218,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initDailyRoutine();
   initSleepTimer();
   initAmbientMixer();
+  initAudioModifications();
+  initVoiceSearch();
 
   // Highlight initial language chip
   DOM.langChips.forEach(c => {

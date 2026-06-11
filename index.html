@@ -102,6 +102,9 @@
           <div class="search-bar-container">
             <i data-lucide="search" class="search-bar-icon"></i>
             <input type="text" id="global-search-input" placeholder="Search songs, albums, artists, or playlists...">
+            <button id="btn-voice-search" class="voice-search-btn" title="Voice Search" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; margin-right:8px; transition:all 0.2s; padding: 4px;">
+              <i data-lucide="mic"></i>
+            </button>
             <button id="btn-clear-search" class="clear-search-btn" style="display:none;">
               <i data-lucide="x"></i>
             </button>
@@ -544,6 +547,30 @@
                   <button class="ambient-toggle-btn text-btn" data-sound="forest" style="font-size: 12px; color: var(--text-muted);">Muted</button>
                 </div>
                 <input type="range" class="ambient-volume-slider" data-sound="forest" min="0" max="100" value="0" style="width: 100%;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio Customization Deck (Speed / Slowed + Reverb) -->
+          <div class="focus-section-card glass-card" style="padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
+            <h4 style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text-primary); font-size: 16px;"><i data-lucide="sliders"></i> Audio Modification Deck</h4>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">Customize playback speed and slow-down options.</p>
+            
+            <div class="audio-modifier-controls" style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; color: var(--text-primary);">Playback Speed</span>
+                  <span id="speed-value" style="font-size: 14px; font-weight: 600; color: var(--primary);">1.0x</span>
+                </div>
+                <input type="range" id="playback-speed-slider" min="0.5" max="2.0" step="0.1" value="1.0" class="ambient-volume-slider" style="width: 100%;">
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px;">
+                <span style="font-size: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 6px;"><i data-lucide="moon" style="color:#a78bfa; width:16px;"></i> Slowed & Reverb</span>
+                <label class="switch-toggle" style="position: relative; display: inline-block; width: 44px; height: 22px;">
+                  <input type="checkbox" id="slowed-reverb-toggle" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider-toggle-round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 22px; border: 1px solid var(--border-glass);"></span>
+                </label>
               </div>
             </div>
           </div>

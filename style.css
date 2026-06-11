@@ -3,25 +3,25 @@
    ========================================================================== */
 
 :root {
-  /* Colors */
-  --bg-dark: #070913;
-  --bg-sidebar: rgba(13, 17, 33, 0.45);
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-card-hover: rgba(255, 255, 255, 0.07);
-  --border-glass: rgba(255, 255, 255, 0.06);
-  --border-glass-bright: rgba(255, 255, 255, 0.12);
+  /* Apple Music Design System Colors */
+  --bg-dark: #050505;
+  --bg-sidebar: rgba(20, 20, 25, 0.6);
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-bright: rgba(255, 255, 255, 0.15);
   
-  --primary: #8b5cf6;       /* Violet */
-  --primary-hover: #a78bfa;
-  --secondary: #10b981;     /* Emerald */
-  --accent: #6366f1;        /* Indigo */
+  --primary: #fc3c44;       /* Apple Music Pink Red */
+  --primary-hover: #ff5a60;
+  --secondary: #34c759;     /* Apple Green */
+  --accent: #af52de;        /* Apple Music Purple */
   
-  --text-primary: #f8fafc;  /* Bright slate */
-  --text-secondary: #94a3b8;/* Cool gray */
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #8e8e93;/* Apple System Gray */
+  --text-muted: #636366;
   
-  --glow-purple: rgba(139, 92, 246, 0.15);
-  --glow-indigo: rgba(99, 102, 241, 0.15);
+  --glow-purple: rgba(252, 60, 68, 0.15);
+  --glow-indigo: rgba(175, 82, 222, 0.15);
   
   /* Layout Metrics */
   --sidebar-width: 250px;
@@ -30,8 +30,8 @@
   --right-panel-width: 320px;
   
   /* Font Families */
-  --font-display: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Outfit", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
 }
 
 /* Base resets */
@@ -2211,5 +2211,38 @@ body {
   border-left: 3px solid var(--primary);
   text-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
 }
+
+/* Switch toggle styling */
+.switch-toggle input:checked + .slider-toggle-round {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background-color: var(--primary);
+}
+.switch-toggle input:checked + .slider-toggle-round:before {
+  transform: translateX(20px);
+}
+.slider-toggle-round:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* Listening pulse animation */
+@keyframes mic-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.75; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.listening-pulse {
+  animation: mic-pulse 1.2s infinite ease-in-out;
+}
+
+
 
 
