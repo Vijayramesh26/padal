@@ -1822,6 +1822,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initEqualizer() {
     if (equalizerInitialized) return;
+    
+    // Check if device is mobile. Mobile browsers freeze/suspend Web Audio contexts when 
+    // the tab goes out of focus or the screen locks, muting background playback.
+    // By skipping routing on mobile, we leverage native HTML5 background playback.
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      console.log("Mobile device detected: using native background playback stream.");
+      return;
+    }
+    
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContextClass();
