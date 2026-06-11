@@ -1812,31 +1812,40 @@ body {
 
   /* Player controls simplified */
   .player-controls-container {
-    padding: 0 12px;
-    gap: 8px;
+    padding: 0 16px;
+    gap: 12px;
   }
   .player-track-info {
-    width: 35%;
+    width: 40%;
     gap: 8px; /* Reduce gap on mobile */
   }
   .track-details {
-    max-width: 80px; /* Keep title from pressing against fav button */
+    max-width: 110px; /* Keep title from pressing against controls */
   }
   .track-details h4 {
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .track-details p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .player-playback-controls {
-    gap: 10px;
+    gap: 12px;
   }
   .player-right-controls {
     width: auto;
     flex-grow: 1;
     justify-content: flex-end;
-    gap: 6px;
+    gap: 10px;
   }
   .volume-control-wrapper {
     display: none; /* Hide volume slider on mobile */
+  }
+  .time-label {
+    display: none !important; /* Hide time labels on mobile to avoid overlap */
   }
 
   /* Right Drawer active slide overlay */
@@ -1858,25 +1867,37 @@ body {
     max-width: 200px;
   }
   
+  .player-controls-container {
+    padding: 0 8px;
+    gap: 4px;
+  }
   .player-track-info {
-    width: 50%;
+    width: 45%;
+    gap: 6px;
   }
   .track-art-wrapper {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
+  }
+  .track-details {
+    max-width: 75px;
   }
   .player-right-controls {
     width: auto;
+    gap: 6px;
+  }
+  .quality-selector-wrapper {
+    display: none; /* Hide quality select text button on ultra-small screens */
   }
   .player-btn-shuffle, .player-btn-loop {
     display: none; /* Hide loop/shuffle on tiny screens to save space */
   }
   .player-playback-controls {
-    gap: 8px;
+    gap: 6px;
   }
   .player-play-btn {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
   }
 }
 
